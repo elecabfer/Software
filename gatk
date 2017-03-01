@@ -10,6 +10,7 @@ vcfutils.pl ucscsnp2vcf snp128.txt > snp128.vcf
 
 module add UHTS/Analysis/GenomeAnalysisTK/3.7;
 
+java -jar CreateSequenceDictionary.jar R= /db/SOFTWARE/bowtie2/mm9/genome.fa O=genome.fa.dict
 GenomeAnalysisTK.jar -T VariantsToVCF -R /db/SOFTWARE/bowtie2/mm9/genome.fa -o mm9_snp128.vcf --variant:mm9_snp128.txt
 ######################## 
 
