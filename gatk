@@ -1,12 +1,19 @@
 #get vcf file
-##curl http://hgdownload.cse.ucsc.edu/goldenPath/mm9/database/snp128.txt.gz > mm9_snp128.txt.gz
 
+module add UHTS/Analysis/samtools/1.3;
+wget http://hgdownload.cse.ucsc.edu/goldenPath/mm9/database/snp128.txt.gz
+gunzip snp128.txt.gz
 ###Convert txt to VCF file
+vcfutils.pl ucscsnp2vcf snp128.txt > snp128.vcf
 
-java -jar GenomeAnalysisTK.jar \
-   -T VariantsToVCF \
-   -R /db/SOFTWARE/bowtie2/mm9/genome.fa \
-   -o output.vcf \
-   -D mm9_snp128.txt
-   --variant:mm9_snp128 \
+#GTAK way for vcf files:
+
+module add UHTS/Analysis/GenomeAnalysisTK/3.7;
+
+GenomeAnalysisTK.jar -T VariantsToVCF -R /db/SOFTWARE/bowtie2/mm9/genome.fa -o mm9_snp128.vcf --variant:mm9_snp128.txt
+######################## 
+
+module add UHTS/Analysis/GenomeAnalysisTK/3.7;
+GenomeAnalysisTK  -T BaseRecalibrator -R /db/SOFTWARE/bowtie2/mm9/genome.fa -I Bicc1KH1/Bicc1KH1_unique_hits_s.bam -L 21  -knownSites snp128.vcf -o recal_data.table
    
+
