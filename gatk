@@ -1,0 +1,12 @@
+#get vcf file
+##curl http://hgdownload.cse.ucsc.edu/goldenPath/mm9/database/snp128.txt.gz > mm9_snp128.txt.gz
+
+###Convert txt to VCF file
+
+java -jar GenomeAnalysisTK.jar \
+   -T VariantsToVCF \
+   -R /db/SOFTWARE/bowtie2/mm9/genome.fa \
+   -o output.vcf \
+   -D mm9_snp128.txt
+   --variant:mm9_snp128 \
+   
