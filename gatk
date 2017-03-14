@@ -7,7 +7,7 @@ vcfutils.pl ucscsnp2vcf snp128_s.txt > snp128.vcf
 
 #####GTAK way for vcf files:
 module add UHTS/Analysis/GenomeAnalysisTK/3.7;
-GenomeAnalysisTK.jar -T VariantsToVCF -R /db/SOFTWARE/bowtie2/mm9/genome.fa -o mm9_snp128.vcf --variant:mm9_snp128.txt
+GenomeAnalysisTK -T VariantsToVCF -R /db/SOFTWARE/bowtie2/mm9/genome.fa -o mm9_snp128.vcf --variant:mm9_snp128.txt
 
 
 #####Create dictionary and index
@@ -23,3 +23,94 @@ module add UHTS/Analysis/GenomeAnalysisTK/3.7;
 GenomeAnalysisTK  -T BaseRecalibrator -R genome.fa -I Bicc1KH1/Bicc1KH1_unique_hits_s.bam -L 21  -knownSites  snp128.vcf -o recal_data.table
 #ERROR con el head del sam file?
 picard-tools AddOrReplaceReadGroups I=Bicc1KH1/Bicc1KH1_unique_hits_s.bam O=Bicc1KH1/Bicc1KH1_unique_hits_2.bam RGSM=Bicc1KH1 RGLB=bicc1 RGPL=illumina RGPU=none
+
+###############ERROR el VCF is malformed
+##delete line number 1108:
+sed '1108d' snp128.vcf >snp128_m.vcf
+## remove all the lines containing "-" in the 4th column
+awk '$4 != "-"' snp128.vcf > snp128_m.vcf 
+##delete lines 1108 and 1446
+sed '1108d;1446d' snp128.vcf > snp128_m.vcf
+
+###ERROR
+
+ERROR MESSAGE: Invalid command line: No tribble type was provided on the command line and the type of the file 'snp128_ms.vcf' could not be determined dynamically. Please add an explicit type tag :NAME listing the correct type from among the supported types:
+##### ERROR          Name        FeatureType   Documentation
+##### ERROR          BCF2     VariantContext   (this is an external codec and is not documented within GATK)
+##### ERROR        BEAGLE      BeagleFeature   (this is an external codec and is not documented within GATK)
+##### ERROR           BED         BEDFeature   (this is an external codec and is not documented within GATK)
+##### ERROR      BEDTABLE       TableFeature   (this is an external codec and is not documented within GATK)
+##### ERROR EXAMPLEBINARY            Feature   (this is an external codec and is not documented within GATK)
+##### ERROR      GELITEXT    GeliTextFeature   (this is an external codec and is not documented within GATK)
+##### ERROR     RAWHAPMAP   RawHapMapFeature   (this is an external codec and is not documented within GATK)
+##### ERROR        REFSEQ      RefSeqFeature   (this is an external codec and is not documented within GATK)
+##### ERROR     SAMPILEUP   SAMPileupFeature   (this is an external codec and is not documented within GATK)
+##### ERROR       SAMREAD     SAMReadFeature   (this is an external codec and is not documented within GATK)
+##### ERROR         TABLE       TableFeature   (this is an external codec and is not documented within GATK)
+##### ERROR           VCF     VariantContext   (this is an external codec and is not documented within GATK)
+##### ERROR          VCF3     VariantContext   (this is an external codec and is not documented within GATK)
+
+#Asi que ponemos,  -knownSites:VCF snp128_ms.vcf
+
+#####################################################ERROR
+##### ERROR MESSAGE: Your input file has a malformed header: We never saw the required CHROM header line (starting with one #) for the input VCF file
+#Miramos qué esta mal:
+[ecabello@frt Simon]$ grep "#" snp128_ms.vcf
+##fileformat=VCFv4.0
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+## Pero no esta al principio, asi que lo copiamos y pegamos como header:
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+##### ERROR MESSAGE: Your input file has a malformed header: We never saw a header line specifying VCF version
+##fileformat=VCFv4.0
+#############################################################################
+##### ERROR MESSAGE: Input file is not sorted by start position.
+##### ERROR We saw a record with a start of chr10:10001211 after a record with a start of chr10:100009602, for input source: /scratch/el/monthly/ecabello/Simon/snp128_ms.vcf
+#sort by numerical order column 1, then 2
+sort  -k1,1 -k2,2n snp128_b.vcf -o snp128_bs.vcf
+
+##### ERROR MESSAGE: The provided VCF file is malformed at approximately line number 327711: unparsable vcf record with allele NlengthTooLong
+#Qué hay en la linea 327711
+sed -n '327711p' snp128_bs.vcf
+chr1	58883841	rs3022797	N	NlengthTooLong	0	.	molType=genomic;class=in-del
+
+#Vamos a ver cuantas lineas tiene el original
+wc -l snp128_bs.vcf
+14891120 snp128_bs.vcf
+#vamos a quitarlo
+grep -v "NlengthTooLong" snp128_bs.vcf >  snp128_bsb.vcf
+14891113 snp128_bsb.vcf #se han quitado 7 lineas
+##### ERROR MESSAGE: The provided VCF file is malformed at approximately line number 5156030: unparsable vcf record with allele N(16 BP DEL)
+grep -v "(" snp128_b.vcf > snp128_b2.vcf
+wc -l snp128_b2.vcf
+##### ERROR MESSAGE: The provided VCF file is malformed at approximately line number 10579570: unparsable vcf record with allele NcnoLooAhacnel
+
+grep -v "_random" snp128_b2.vcf > snp128_b3.vcf
+grep -v "NcnoLooAhacnel" snp128_b3.vcf > snp128_b2.vcf
+###RUN 
+module add UHTS/Analysis/GenomeAnalysisTK/3.7;
+GenomeAnalysisTK  -T BaseRecalibrator -R genome.fa -I Bicc1KH1/Bicc1KH1_unique_hits_2.bam -L 21  -knownSites:VCF snp128_b3.vcf -o recal_data.table
+##### ERROR MESSAGE: Input files /scratch/el/monthly/ecabello/Simon/snp128_b3.vcf and reference have incompatible contigs. Please see https://software.broadinstitute.org/gatk/documentation/article?id=63for more information. Error details: The contig order in /scratch/el/monthly/ecabello/Simon/snp128_b3.vcf and reference is not the same; to fix this please see: (https://www.broadinstitute.org/gatk/guide/article?id=1328),  which describes reordering contigs in BAM and VCF files..
+##### ERROR   /scratch/el/monthly/ecabello/Simon/snp128_b3.vcf contigs = [chr1, chr10, chr11, chr12, chr13, chr14, chr15, chr16, chr17, chr18, chr19, chr2, chr3, chr4, chr5, chr6, chr7, chr8, chr9, chrM, chrX, chrY]
+##### ERROR   reference contigs = [chr10, chr11, chr12, chr13, chr14, chr15, chr16, chr17, chr18, chr19, chr1, chr2, chr3, chr4, chr5, chr6, chr7, chr8, chr9, chrM, chrX, chrY]
+
+
+##sort again and again
+sort -k1,1 -k2n,2 snp128_b3.vcf -o snp128_b4.vcf #No sirve de nada, porque no queremos la primera columna bien ordenada.
+##sort genome.fa -> sort_genome.py
+genome=open("genome.fa", "r").read()
+chromosomes=genome.split(">")
+output=open("genome_s.fa", "w")
+chromosomes.sort()
+for s in chromosomes:
+    output.write(s)
+######################################################################## hacer index/dict again
+module add UHTS/Analysis/picard-tools/1.80;
+picard-tools CreateSequenceDictionary R= genome.fa O=genome.fa.dict
+module add UHTS/Analysis/samtools/1.3;
+samtools faidx genome.fa
+mv genome.fa.dict genome.dict
+#################################################
+GenomeAnalysisTK  -T BaseRecalibrator -R genome.fa -I Bicc1KH1/Bicc1KH1_unique_hits_2.bam -L 21  -knownSites:VCF snp128_b3.vcf -o recal_data.table
+##### ERROR MESSAGE: Badly formed genome location: Contig '21' does not match any contig in the GATK sequence dictionary derived from the reference; are you sure you are using the correct reference fasta file?
+bsub -M 129992992 samtools sort -o Bicc1KH1/Bicc1KH1_unique_hits_2s.bam Bicc1KH1/Bicc1KH1_unique_hits_2.bam
+
