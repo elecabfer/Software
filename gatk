@@ -112,6 +112,6 @@ mv genome.fa.dict genome.dict
 #################################################
 GenomeAnalysisTK  -T BaseRecalibrator -R genome.fa -I Bicc1KH1/Bicc1KH1_unique_hits_2.bam -L 21  -knownSites:VCF snp128_b3.vcf -o recal_data.table
 ##### ERROR MESSAGE: Badly formed genome location: Contig '21' does not match any contig in the GATK sequence dictionary derived from the reference; are you sure you are using the correct reference fasta file?
-#sort bam file
-bsub -M 129992992 samtools sort -o Bicc1KH1/Bicc1KH1_unique_hits_2s.bam Bicc1KH1/Bicc1KH1_unique_hits_2.bam
-
+##
+picard-tools ReorderSam I=Bicc1KH1/Bicc1KH1_unique_hits_2.bam O=Bicc1KH1/Bicc1KH1_unique_hits_2r.bam R=genome.fa CREATE_INDEX=TRUE
+picard-tools SortVcf I=snp128_b3.vcf O=snp128_b3r.vcf SEQUENCE_DICTIONARY=genome.dict 
