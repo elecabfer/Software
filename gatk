@@ -1,11 +1,11 @@
-#get vcf file
+#get vcf file ##MAL
 module add UHTS/Analysis/samtools/1.3;
 wget http://hgdownload.cse.ucsc.edu/goldenPath/mm9/database/snp128.txt.gz
 gunzip snp128.txt.gz
 ###Convert txt to VCF file
 vcfutils.pl ucscsnp2vcf snp128_s.txt > snp128.vcf
 
-#####GTAK way for vcf files:
+#####GTAK way for vcf files: #MAL
 module add UHTS/Analysis/GenomeAnalysisTK/3.7;
 GenomeAnalysisTK -T VariantsToVCF -R /db/SOFTWARE/bowtie2/mm9/genome.fa -o mm9_snp128.vcf --variant:mm9_snp128.txt
 
@@ -93,7 +93,6 @@ GenomeAnalysisTK  -T BaseRecalibrator -R genome.fa -I Bicc1KH1/Bicc1KH1_unique_h
 ##### ERROR   /scratch/el/monthly/ecabello/Simon/snp128_b3.vcf contigs = [chr1, chr10, chr11, chr12, chr13, chr14, chr15, chr16, chr17, chr18, chr19, chr2, chr3, chr4, chr5, chr6, chr7, chr8, chr9, chrM, chrX, chrY]
 ##### ERROR   reference contigs = [chr10, chr11, chr12, chr13, chr14, chr15, chr16, chr17, chr18, chr19, chr1, chr2, chr3, chr4, chr5, chr6, chr7, chr8, chr9, chrM, chrX, chrY]
 
-
 ##sort again and again
 sort -k1,1 -k2n,2 snp128_b3.vcf -o snp128_b4.vcf #No sirve de nada, porque no queremos la primera columna bien ordenada.
 ##sort genome.fa -> sort_genome.py
@@ -104,14 +103,17 @@ chromosomes.sort()
 for s in chromosomes:
     output.write(s)
 ######################################################################## hacer index/dict again
-module add UHTS/Analysis/picard-tools/1.80;
+module add UHTS/Analysis/picard-tools/2.2.1;
 picard-tools CreateSequenceDictionary R= genome.fa O=genome.fa.dict
 module add UHTS/Analysis/samtools/1.3;
 samtools faidx genome.fa
 mv genome.fa.dict genome.dict
 #################################################
-GenomeAnalysisTK  -T BaseRecalibrator -R genome.fa -I Bicc1KH1/Bicc1KH1_unique_hits_2.bam -L 21  -knownSites:VCF snp128_b3.vcf -o recal_data.table
+GenomeAnalysisTK  -T BaseRecalibrator -R genome.fa -I Bicc1KH1/Bicc1KH1_unique_hits_2.bam -L 21  -knownSites:VCF snp128_b4.vcf -o recal_data.table
 ##### ERROR MESSAGE: Badly formed genome location: Contig '21' does not match any contig in the GATK sequence dictionary derived from the reference; are you sure you are using the correct reference fasta file?
 ##
-picard-tools ReorderSam I=Bicc1KH1/Bicc1KH1_unique_hits_2.bam O=Bicc1KH1/Bicc1KH1_unique_hits_2r.bam R=genome.fa CREATE_INDEX=TRUE
-picard-tools SortVcf I=snp128_b3.vcf O=snp128_b3r.vcf SEQUENCE_DICTIONARY=genome.dict 
+bsub -M 129992992 picard-tools ReorderSam I=Bicc1KH1/Bicc1KH1_unique_hits_2.bam O=Bicc1KH1/Bicc1KH1_unique_hits_2r.bam R=genome.fa CREATE_INDEX=TRUE
+bsub -M 129992992 picard-tools SortVcf I=snp128_b3.vcf O=snp128_b3r.vcf SEQUENCE_DICTIONARY=genome.dict 
+##downoload bed file for the "-L" option:
+https://www.biostars.org/p/85225/
+GenomeAnalysisTK  -T BaseRecalibrator -R genome.fa -I Bicc1KH1/Bicc1KH1_unique_hits_2r.bam -L:capture,BED targets.interval_list2  -knownSites:VCF snp128_ucsc_github.vcf -o recal_data.table
