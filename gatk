@@ -117,3 +117,7 @@ bsub -M 129992992 picard-tools SortVcf I=snp128_b3.vcf O=snp128_b3r.vcf SEQUENCE
 ##downoload bed file for the "-L" option:
 https://www.biostars.org/p/85225/
 GenomeAnalysisTK  -T BaseRecalibrator -R genome.fa -I Bicc1KH1/Bicc1KH1_unique_hits_2r.bam -L:capture,BED targets.interval_list2  -knownSites:VCF snp128_ucsc_github.vcf -o recal_data.table
+###ERROR
+#### ERROR MESSAGE: Unsupported CIGAR operator N in read NB500883:125:HCL5MBGX2:3:12605:21178:3068 at chr1:4763388.
+#Solucion: Anadir -U ALLOW_N_CIGAR_READS
+bsub -M 129992992 GenomeAnalysisTK  -T BaseRecalibrator -R genome.fa -U ALLOW_N_CIGAR_READS -I Bicc1KH1/Bicc1KH1_unique_hits_2r.bam -L:capture,BED targets.interval_list2  -knownSites:VCF snp128_ucsc_github.vcf -o recal_data.table
