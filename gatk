@@ -3,7 +3,7 @@ module add UHTS/Analysis/samtools/1.3;
 wget http://hgdownload.cse.ucsc.edu/goldenPath/mm9/database/snp128.txt.gz
 gunzip snp128.txt.gz
 ###Convert txt to VCF file
-vcfutils.pl ucscsnp2vcf snp128_s.txt > snp128.vcf
+vcfutils.pl ucscsnp2vcf snp128_s.txt > snp128.vcf  (al final he cambiado el vcf)
 
 #####GTAK way for vcf files: #MAL
 module add UHTS/Analysis/GenomeAnalysisTK/3.7;
@@ -55,7 +55,7 @@ ERROR MESSAGE: Invalid command line: No tribble type was provided on the command
 #####################################################ERROR
 ##### ERROR MESSAGE: Your input file has a malformed header: We never saw the required CHROM header line (starting with one #) for the input VCF file
 #Miramos qué esta mal:
-[ecabello@frt Simon]$ grep "#" snp128_ms.vcf
+[ecabello@frt Simon]$ grep "#" snp128_ms.vcf  (al final he cambiado el vcf)
 ##fileformat=VCFv4.0
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
 ## Pero no esta al principio, asi que lo copiamos y pegamos como header:
@@ -69,23 +69,23 @@ ERROR MESSAGE: Invalid command line: No tribble type was provided on the command
 sort  -k1,1 -k2,2n snp128_b.vcf -o snp128_bs.vcf
 
 ##### ERROR MESSAGE: The provided VCF file is malformed at approximately line number 327711: unparsable vcf record with allele NlengthTooLong
-#Qué hay en la linea 327711
+#Qué hay en la linea 327711 (al final he cambiado el vcf)
 sed -n '327711p' snp128_bs.vcf
 chr1	58883841	rs3022797	N	NlengthTooLong	0	.	molType=genomic;class=in-del
 
-#Vamos a ver cuantas lineas tiene el original
+#Vamos a ver cuantas lineas tiene el original  (al final he cambiado el vcf)
 wc -l snp128_bs.vcf
 14891120 snp128_bs.vcf
 #vamos a quitarlo
-grep -v "NlengthTooLong" snp128_bs.vcf >  snp128_bsb.vcf
+grep -v "NlengthTooLong" snp128_bs.vcf >  snp128_bsb.vcf  (al final he cambiado el vcf)
 14891113 snp128_bsb.vcf #se han quitado 7 lineas
 ##### ERROR MESSAGE: The provided VCF file is malformed at approximately line number 5156030: unparsable vcf record with allele N(16 BP DEL)
-grep -v "(" snp128_b.vcf > snp128_b2.vcf
+grep -v "(" snp128_b.vcf > snp128_b2.vcf  (al final he cambiado el vcf)
 wc -l snp128_b2.vcf
 ##### ERROR MESSAGE: The provided VCF file is malformed at approximately line number 10579570: unparsable vcf record with allele NcnoLooAhacnel
 
-grep -v "_random" snp128_b2.vcf > snp128_b3.vcf
-grep -v "NcnoLooAhacnel" snp128_b3.vcf > snp128_b2.vcf
+grep -v "_random" snp128_b2.vcf > snp128_b3.vcf  (al final he cambiado el vcf)
+grep -v "NcnoLooAhacnel" snp128_b3.vcf > snp128_b2.vcf  (al final he cambiado el vcf)
 ###RUN 
 module add UHTS/Analysis/GenomeAnalysisTK/3.7;
 GenomeAnalysisTK  -T BaseRecalibrator -R genome.fa -I Bicc1KH1/Bicc1KH1_unique_hits_2.bam -L 21  -knownSites:VCF snp128_b3.vcf -o recal_data.table
